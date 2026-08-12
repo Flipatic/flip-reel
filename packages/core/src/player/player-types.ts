@@ -2,6 +2,7 @@ import type { Story } from '../types/story'
 
 export interface AdState {
   active: boolean
+  due: boolean
   skippable: boolean
   blocking: boolean
   index: number

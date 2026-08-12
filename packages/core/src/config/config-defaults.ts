@@ -14,6 +14,8 @@ export const DEFAULT_PLAYER: Required<PlayerOptions> = {
   loop: true,
   autoplayMuted: true,
   showReadMore: true,
+  restartOnRevisit: true,
+  prefetch: 1,
 }
 
 export const DEFAULT_ADS: Required<AdOptions> = {

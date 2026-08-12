@@ -1,12 +1,19 @@
 import { LitElement, html, nothing, type PropertyValues } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import { LeasePriority, type FlipReelOptions, type PlayerState } from '@flipatic/flip-reel-core'
+import {
+  LeasePriority,
+  resolvePrefetch,
+  type FlipReelOptions,
+  type PlayerState,
+} from '@flipatic/flip-reel-core'
 import { WidgetController } from '../context/widget-controller'
 import { readOptions } from '../context/attribute-options'
 import { VideoLeaseController } from '../controllers/video-lease-controller'
 import { Ticker } from '../controllers/ticker'
 import { ReelScrollDriver } from '../controllers/reel-scroll-driver'
 import { WheelInputRouter } from '../controllers/wheel-input-router'
+import { VideoReadinessTracker } from '../controllers/video-readiness-tracker'
+import { ReelVideoStage } from '../controllers/reel-video-stage'
 import { playerStyles } from './player-styles'
 import { tokens } from '../styles/tokens'
 import { controlButton } from '../styles/shared'
@@ -39,6 +46,7 @@ export class FlipReelPlayer extends LitElement {
     this.updateVideoProgress()
   })
   private videoLease?: VideoLeaseController
+  private videoStage?: ReelVideoStage
   private unsubscribe?: () => void
   private own?: WidgetController
   private scrollBound = false
@@ -46,8 +54,9 @@ export class FlipReelPlayer extends LitElement {
   private needsInitialScroll = false
   private syncedIndex = -1
   private syncedCategory = ''
-  private pendingRewind = false
   private wasAdActive = false
+  private touching = false
+  private heldTarget = -1
   private lastUserScrollAt = Number.NEGATIVE_INFINITY
   private settleTimer = 0
   private mediaTapTimer = 0
@@ -57,6 +66,7 @@ export class FlipReelPlayer extends LitElement {
   private wheelGlideOrigin = -1
   private wheelEndTimer = 0
   private readonly wheelRouter = new WheelInputRouter()
+  private readonly videoReadiness = new VideoReadinessTracker(this)
   private readonly scrollDriver = new ReelScrollDriver({
     scroller: () => this.renderRoot.querySelector<HTMLElement>('.scroller'),
     reels: () => Array.from(this.renderRoot.querySelectorAll<HTMLElement>('.reel')),
@@ -86,11 +96,11 @@ export class FlipReelPlayer extends LitElement {
 
   updated(): void {
     this.syncDialog()
-    this.bindScroll()
+    this.bindScroller()
     this.bindWheel()
-    this.syncVideos()
     this.reconcileAdEdge()
     this.syncScrollPosition()
+    this.syncVideos()
     this.scrollDriver.updateFade()
   }
 
@@ -112,15 +122,19 @@ export class FlipReelPlayer extends LitElement {
     this.videoLease = new VideoLeaseController(this, widget.scheduler, () => {
       this.activeVideo()?.pause()
     })
+    this.videoStage = new ReelVideoStage({
+      restartOnRevisit: widget.config.player.restartOnRevisit,
+      onAutoplayBlocked: (blocked) => this.controller?.setAutoplayBlocked(blocked),
+    })
     this.unsubscribe = widget.player.subscribe((state) => {
       const prev = this.snapshot
       const opened = state.open && !prev?.open
-      const activated =
-        prev !== undefined &&
-        (state.activeIndex !== prev.activeIndex || state.categoryId !== prev.categoryId)
       this.snapshot = state
-      if (opened) this.needsInitialScroll = true
-      if (opened || activated) this.pendingRewind = true
+      if (opened) {
+        this.needsInitialScroll = true
+        this.heldTarget = -1
+        this.videoStage?.reset()
+      }
       this.requestUpdate()
     })
   }
@@ -137,20 +151,21 @@ export class FlipReelPlayer extends LitElement {
     )
   }
 
-  private activeProgressBar(): FlipReelProgressBar | null {
-    const index = this.snapshot?.activeIndex
-    if (index === undefined) return null
-    const reel = this.renderRoot.querySelector(`.reel[data-index="${index}"]`)
-    return reel?.querySelector<FlipReelProgressBar>('flip-reel-progress-bar') ?? null
-  }
-
   private updateVideoProgress(): void {
     const snap = this.snapshot
-    if (!snap || snap.paused || snap.ad.active) return
-    const video = this.activeVideo()
-    if (!video || !Number.isFinite(video.duration) || video.duration <= 0 || video.paused) return
-    const bar = this.activeProgressBar()
-    if (bar) bar.value = Math.min(1, video.currentTime / video.duration)
+    if (!snap || snap.ad.active) return
+    const center = this.heldTarget >= 0 ? this.heldTarget : snap.activeIndex
+    for (let index = center - 1; index <= center + 1; index += 1) this.syncProgressBar(index)
+  }
+
+  private syncProgressBar(index: number): void {
+    const reel = this.renderRoot.querySelector(`.reel[data-index="${index}"]`)
+    const video = reel?.querySelector<HTMLVideoElement>('video.media')
+    const bar = reel?.querySelector<FlipReelProgressBar>('flip-reel-progress-bar')
+    if (!video || !bar) return
+    const duration = video.duration
+    if (!Number.isFinite(duration) || duration <= 0) return
+    bar.value = Math.min(1, video.currentTime / duration)
   }
 
   private syncDialog(): void {
@@ -167,11 +182,25 @@ export class FlipReelPlayer extends LitElement {
     }
   }
 
-  private bindScroll(): void {
+  private bindScroller(): void {
     const scroller = this.scroller
     if (!scroller || this.scrollBound) return
     scroller.addEventListener('scroll', this.onScroll, { passive: true })
+    scroller.addEventListener('touchstart', this.onTouchStart, { passive: true })
+    scroller.addEventListener('touchend', this.onTouchEnd, { passive: true })
+    scroller.addEventListener('touchcancel', this.onTouchEnd, { passive: true })
     this.scrollBound = true
+  }
+
+  private readonly onTouchStart = (): void => {
+    this.touching = true
+  }
+
+  private readonly onTouchEnd = (event: TouchEvent): void => {
+    if (event.touches.length > 0) return
+    this.touching = false
+    this.syncVideos()
+    this.scheduleSettle()
   }
 
   private bindWheel(): void {
@@ -182,6 +211,7 @@ export class FlipReelPlayer extends LitElement {
   }
 
   private readonly onScroll = (): void => {
+    this.syncVideos()
     if (this.scrollDriver.isAnimating) return
     this.lastUserScrollAt = performance.now()
     this.scrollDriver.updateFade()
@@ -273,7 +303,7 @@ export class FlipReelPlayer extends LitElement {
   }
 
   private onSettle(): void {
-    if (this.wheelGlideOrigin >= 0) return
+    if (this.gestureActive()) return
     const snap = this.snapshot
     if (!snap || snap.ad.active || this.scrollDriver.isAnimating) return
     const index = this.scrollDriver.nearestIndex(snap.activeIndex)
@@ -293,25 +323,31 @@ export class FlipReelPlayer extends LitElement {
     this.syncedIndex = snap.activeIndex
   }
 
+  private videos(): HTMLVideoElement[] {
+    return Array.from(this.renderRoot.querySelectorAll<HTMLVideoElement>('video.media'))
+  }
+
+  private gestureActive(): boolean {
+    return this.touching || this.wheelGlideOrigin >= 0
+  }
+
+  private playbackTarget(snap: PlayerState): number {
+    if (this.gestureActive() && this.heldTarget >= 0) return this.heldTarget
+    const animating = this.scrollDriver.isAnimating && this.scrollDriver.animationTarget >= 0
+    const target = animating
+      ? this.scrollDriver.animationTarget
+      : this.scrollDriver.nearestIndex(snap.activeIndex)
+    this.heldTarget = target
+    return target
+  }
+
   private syncVideos(): void {
     const snap = this.snapshot
     if (!snap) return
-    if (this.pendingRewind) {
-      this.pendingRewind = false
-      const active = this.activeVideo()
-      if (active && active.currentTime > 0) active.currentTime = 0
-    }
-    for (const video of this.renderRoot.querySelectorAll<HTMLVideoElement>('video.media')) {
-      const index = Number(video.dataset.index)
-      video.muted = snap.muted
-      const playable = index === snap.activeIndex && snap.open && !snap.paused && !snap.ad.active
-      if (playable) {
-        this.videoLease?.acquire(LeasePriority.PLAYER_ACTIVE)
-        if (video.paused) video.play().catch(() => this.controller?.setAutoplayBlocked(true))
-      } else if (!video.paused) {
-        video.pause()
-      }
-    }
+    const videos = this.videos()
+    this.videoReadiness.observe(videos)
+    if (snap.open && !snap.ad.active) this.videoLease?.acquire(LeasePriority.PLAYER_ACTIVE)
+    this.videoStage?.sync(videos, snap, this.playbackTarget(snap))
   }
 
   private syncScrollPosition(): void {
@@ -334,25 +370,6 @@ export class FlipReelPlayer extends LitElement {
     }
     if (snap.ad.active) this.scrollDriver.jumpTo(snap.activeIndex)
     else this.scrollDriver.animateTo(snap.activeIndex)
-  }
-
-  private onVideoLoaded(event: Event): void {
-    const video = event.target as HTMLVideoElement
-    const snap = this.snapshot
-    if (
-      !snap ||
-      Number(video.dataset.index) !== snap.activeIndex ||
-      snap.paused ||
-      snap.ad.active
-    ) {
-      return
-    }
-    this.videoLease?.acquire(LeasePriority.PLAYER_ACTIVE)
-    video.muted = snap.muted
-    video.play().then(
-      () => this.controller?.setAutoplayBlocked(false),
-      () => this.controller?.setAutoplayBlocked(true),
-    )
   }
 
   private onVideoTime(event: Event): void {
@@ -378,7 +395,7 @@ export class FlipReelPlayer extends LitElement {
     const video = event.target as HTMLVideoElement
     const snap = this.snapshot
     if (!snap || Number(video.dataset.index) !== snap.activeIndex) return
-    if (this.scrollDriver.isAnimating) return
+    if (this.scrollDriver.isAnimating || this.gestureActive()) return
     if (performance.now() - this.lastUserScrollAt < AUTO_ADVANCE_SCROLL_GUARD_MS) return
     this.stepBy(1)
   }
@@ -441,7 +458,7 @@ export class FlipReelPlayer extends LitElement {
     onMediaTap: (storyId, event) => this.onMediaTap(storyId, event),
     share: (storyId) => this.controller?.share(storyId),
     readMore: () => this.controller?.readMore(),
-    onVideoLoaded: (event) => this.onVideoLoaded(event),
+    onVideoLoaded: () => this.syncVideos(),
     onVideoTime: (event) => this.onVideoTime(event),
     onVideoEnded: (event) => this.onVideoEnded(event),
     onSeek: (fraction) => this.onSeek(fraction),
@@ -480,6 +497,8 @@ export class FlipReelPlayer extends LitElement {
         adapter: widget.config.adapters.ad,
         activeStory,
         activePoster,
+        prefetch: resolvePrefetch(widget.config.player.prefetch),
+        readyVideoIds: this.videoReadiness.ready,
         burst: this.burst,
         handlers: this.handlers,
       })}

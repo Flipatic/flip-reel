@@ -61,6 +61,36 @@ mount(document.querySelector('#reels')!, {
 })
 ```
 
+`player.restartOnRevisit` decides what a reel does when the viewer scrolls back to it: `true`
+(default) restarts it, `false` resumes where they left off, and a predicate decides per story.
+
+```ts
+mount(target, {
+  feed,
+  player: { restartOnRevisit: ({ durationMs }) => durationMs >= 30_000 },
+})
+```
+
+`player.prefetch` is how many reels around the current one are loaded ahead of time (default `1`).
+Reels below the current one buffer fully so they start instantly, reels above load metadata only.
+Raising it trades bandwidth for a faster start; `0` loads nothing but the reel being watched. It
+also takes a function, called with the viewer's connection, so the window can follow the network:
+
+```ts
+mount(target, {
+  feed,
+  player: {
+    prefetch: ({ saveData, effectiveType, downlink }) => {
+      if (saveData || effectiveType === '2g') return 0
+      return downlink !== null && downlink > 5 ? 3 : 1
+    },
+  },
+})
+```
+
+`effectiveType` and `downlink` are `null` where the browser reports nothing. Save-Data and 2G
+connections skip prefetching regardless of what the option says.
+
 ## Theming
 
 Set documented CSS custom properties from the host page — they pierce the Shadow DOM:

@@ -120,8 +120,10 @@ export class PlayerController {
   }
 
   setAutoplayBlocked(blocked: boolean): void {
+    const paused = blocked || this.paused
+    if (this.autoplayBlocked === blocked && this.paused === paused) return
     this.autoplayBlocked = blocked
-    if (blocked) this.paused = true
+    this.paused = paused
     this.notify()
   }
 
@@ -191,6 +193,7 @@ export class PlayerController {
       likedIds: this.liked,
       ad: {
         active: this.adActive,
+        due: this.adDue(),
         skippable: this.ad.skippable,
         blocking: this.adActive && !this.ad.skippable,
         index: this.adsShown,

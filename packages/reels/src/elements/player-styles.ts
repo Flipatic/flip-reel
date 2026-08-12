@@ -227,6 +227,24 @@ export const playerStyles = css`
     object-fit: cover;
     background: #000000;
   }
+  img.poster {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+  }
+  img.poster.faded {
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    img.poster {
+      transition-duration: 1ms;
+    }
+  }
   .mute {
     display: none;
     position: absolute;

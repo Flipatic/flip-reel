@@ -1,5 +1,6 @@
 import type { AdAdapter, FeedAdapter, FeedSource, StateStore } from './adapters'
-import type { Category } from './story'
+import type { Category, Story } from './story'
+import type { ConnectionInfo } from '../utils/device'
 
 export interface RailOptions {
   heading?: string | null
@@ -9,10 +10,23 @@ export interface RailOptions {
   hoverPreviewMs?: number
 }
 
+export interface RestartContext {
+  story: Story
+  video: HTMLVideoElement
+  positionMs: number
+  durationMs: number
+}
+
+export type RestartPolicy = boolean | ((context: RestartContext) => boolean)
+
+export type PrefetchPolicy = number | ((connection: ConnectionInfo) => number)
+
 export interface PlayerOptions {
   loop?: boolean
   autoplayMuted?: boolean
   showReadMore?: boolean
+  restartOnRevisit?: RestartPolicy
+  prefetch?: PrefetchPolicy
 }
 
 export interface AdOptions {

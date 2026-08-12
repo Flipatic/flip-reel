@@ -16,15 +16,37 @@ export function prefersReducedMotion(): boolean {
   return matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+export interface ConnectionInfo {
+  saveData: boolean
+  effectiveType: string | null
+  downlink: number | null
+}
+
+interface NetworkInformation {
+  saveData?: boolean
+  effectiveType?: string
+  downlink?: number
+}
+
+function networkInformation(): NetworkInformation | undefined {
+  if (typeof navigator === 'undefined') return undefined
+  return (navigator as { connection?: NetworkInformation }).connection
+}
+
+export function connectionInfo(): ConnectionInfo {
+  const network = networkInformation()
+  return {
+    saveData: Boolean(network?.saveData),
+    effectiveType: network?.effectiveType ?? null,
+    downlink: typeof network?.downlink === 'number' ? network.downlink : null,
+  }
+}
+
 export function prefersSaveData(): boolean {
-  if (typeof navigator === 'undefined') return false
-  const connection = (navigator as { connection?: { saveData?: boolean } }).connection
-  return Boolean(connection?.saveData)
+  return Boolean(networkInformation()?.saveData)
 }
 
 export function hasSlowConnection(): boolean {
-  if (typeof navigator === 'undefined') return false
-  const connection = (navigator as { connection?: { effectiveType?: string } }).connection
-  const type = connection?.effectiveType
+  const type = networkInformation()?.effectiveType
   return type === 'slow-2g' || type === '2g'
 }

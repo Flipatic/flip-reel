@@ -1,12 +1,15 @@
 import { html, nothing, type TemplateResult } from 'lit'
 import { keyed } from 'lit/directives/keyed.js'
 import {
+  hasSlowConnection,
   isVideoStory,
+  prefersSaveData,
   type AdAdapter,
   type Category,
   type PlayerState,
   type ResolvedConfig,
   type Story,
+  type VideoStory,
 } from '@flipatic/flip-reel-core'
 import type { Messages } from '../i18n/i18n'
 import { brandMark, icon } from '../icons/icons'
@@ -41,8 +44,23 @@ export interface PlayerViewContext {
   adapter?: AdAdapter
   activeStory: Story | null
   activePoster?: string
+  prefetch: number
+  readyVideoIds: ReadonlySet<string>
   burst?: { storyId: string; seq: number }
   handlers: PlayerHandlers
+}
+
+function videoPreload(index: number, activeIndex: number, prefetch: number) {
+  if (prefersSaveData() || hasSlowConnection()) {
+    return 'none'
+  }
+
+  const distance = index - activeIndex
+  if (Math.abs(distance) > prefetch) {
+    return 'none'
+  }
+
+  return distance > 0 ? 'auto' : 'metadata'
 }
 
 function renderTopbar(ctx: PlayerViewContext): TemplateResult {
@@ -82,8 +100,8 @@ function renderTopbar(ctx: PlayerViewContext): TemplateResult {
   </div>`
 }
 
-function renderCaption(story: Story, active: boolean, ctx: PlayerViewContext): TemplateResult {
-  const { state, messages, config, handlers } = ctx
+function renderCaption(story: Story, ctx: PlayerViewContext): TemplateResult {
+  const { messages, config, handlers } = ctx
   const byline = [story.brand, story.date].filter(Boolean).join(' · ')
   const showReadMore = config.player.showReadMore && Boolean(story.link)
   return html`<div class="caption">
@@ -102,7 +120,6 @@ function renderCaption(story: Story, active: boolean, ctx: PlayerViewContext): T
       : nothing}
     <div class="progress">
       <flip-reel-progress-bar
-        .value="${active ? state.storyProgress : 0}"
         @seek="${(event: CustomEvent<number>) => handlers.onSeek(event.detail)}"
       ></flip-reel-progress-bar>
     </div>
@@ -154,23 +171,39 @@ function renderPauseOverlay(ctx: PlayerViewContext): TemplateResult {
   </div>`
 }
 
+function renderVideo(story: VideoStory, index: number, ctx: PlayerViewContext): TemplateResult {
+  const { state, handlers } = ctx
+
+  return html`<video
+      class="media"
+      data-index="${index}"
+      data-story-id="${story.id}"
+      src="${story.video}#t=0.001"
+      poster="${story.poster ?? nothing}"
+      playsinline
+      preload="${videoPreload(index, state.activeIndex, ctx.prefetch)}"
+      ?muted="${state.muted}"
+      @click="${(event: Event) => handlers.onMediaTap(story.id, event)}"
+      @loadeddata="${handlers.onVideoLoaded}"
+      @timeupdate="${handlers.onVideoTime}"
+      @ended="${handlers.onVideoEnded}"
+    ></video>
+    ${story.poster
+      ? html`<img
+          class="poster ${ctx.readyVideoIds.has(story.id) ? 'faded' : ''}"
+          src="${story.poster}"
+          alt=""
+          decoding="async"
+          loading="lazy"
+        />`
+      : nothing}`
+}
+
 function renderReel(story: Story, index: number, ctx: PlayerViewContext): TemplateResult {
   const { state, handlers } = ctx
   const active = state.activeIndex === index && !state.ad.active
   const media = isVideoStory(story)
-    ? html`<video
-        class="media"
-        data-index="${index}"
-        src="${story.video}"
-        poster="${story.poster ?? ''}"
-        playsinline
-        preload="none"
-        ?muted="${state.muted}"
-        @click="${(event: Event) => handlers.onMediaTap(story.id, event)}"
-        @loadeddata="${handlers.onVideoLoaded}"
-        @timeupdate="${handlers.onVideoTime}"
-        @ended="${handlers.onVideoEnded}"
-      ></video>`
+    ? renderVideo(story, index, ctx)
     : html`<img
         class="media"
         src="${story.type === 'image' ? story.image : ''}"
@@ -179,7 +212,7 @@ function renderReel(story: Story, index: number, ctx: PlayerViewContext): Templa
       />`
   return html`<section class="reel" data-index="${index}">
     <div class="frame">
-      ${media} ${active ? renderMute(ctx) : nothing} ${renderCaption(story, active, ctx)}
+      ${media} ${active ? renderMute(ctx) : nothing} ${renderCaption(story, ctx)}
       ${active && state.paused ? renderPauseOverlay(ctx) : nothing}
       ${active && ctx.burst?.storyId === story.id
         ? keyed(

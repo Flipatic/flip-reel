@@ -1,5 +1,6 @@
 const SNAP_EPSILON_PX = 4
-const STEP_ANIMATION_MS = 450
+const STEP_ANIMATION_MS = 260
+const MIN_ANIMATION_MS = 120
 
 export interface ReelGeometryHost {
   scroller(): HTMLElement | null
@@ -66,18 +67,19 @@ export class ReelScrollDriver {
     const target = this.snapTop(index)
     const start = scroller.scrollTop
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (reduced || Math.abs(target - start) < 1) {
+    const distance = target - start
+    if (reduced || Math.abs(distance) <= SNAP_EPSILON_PX) {
       this.settleAt(scroller, target)
       onLanded?.()
       return
     }
     scroller.style.scrollSnapType = 'none'
     this.animTarget = index
-    const distance = target - start
+    const duration = this.durationFor(scroller, Math.abs(distance))
     const startTime = performance.now()
-    const ease = (t: number) => 1 - Math.pow(1 - t, 4)
+    const ease = (t: number) => 1 - Math.pow(1 - t, 2)
     const tick = (now: number) => {
-      const t = Math.min(1, (now - startTime) / STEP_ANIMATION_MS)
+      const t = Math.min(1, (now - startTime) / duration)
       scroller.scrollTop = start + distance * ease(t)
       this.updateFade()
       if (t < 1) {
@@ -118,6 +120,12 @@ export class ReelScrollDriver {
       const value = String(opacity)
       if (reel.style.opacity !== value) reel.style.opacity = value
     }
+  }
+
+  private durationFor(scroller: HTMLElement, distance: number): number {
+    const page = this.pageHeight(scroller)
+    if (page <= 0) return STEP_ANIMATION_MS
+    return Math.max(MIN_ANIMATION_MS, STEP_ANIMATION_MS * Math.min(1, distance / page))
   }
 
   private settleAt(scroller: HTMLElement, top: number): void {
