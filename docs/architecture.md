@@ -1,7 +1,10 @@
 # FlipReel — Architecture
 
 > Status: v1 implemented 2026-06-16 (decisions locked 2026-06-09, consolidated into this single
-> document 2026-07-31). The monorepo under `packages/` and `apps/` realizes it.
+> document 2026-07-31). The monorepo under `packages/` and `apps/` realizes it. Some sections
+> describe planned layers that 0.2.1 does not ship yet (`::part()`/slot theming beyond the ad
+> slot, Tier B light-DOM adoption, the version-collision guard, SRI hashes, adapter
+> `apiVersion`, Playwright E2E); the [README roadmap](../README.md#roadmap) tracks them.
 
 FlipReel is an **open-source, embeddable stories/reels widget for publishers**. It must drop
 into any publisher site built with any technology (WordPress, React, Vue, Angular, plain HTML), be
@@ -141,7 +144,7 @@ wrapper:
 <flip-reel feed="https://publisher.example/reels.json"></flip-reel>
 
 <!-- composition: rail alone, player alone (e.g. inline in an article), custom layouts -->
-<flip-reel-rail feed="..." category="sport"></flip-reel-rail>
+<flip-reel-rail feed="..."></flip-reel-rail>
 <flip-reel-player feed="..." start="story-7"></flip-reel-player>
 ```
 
@@ -171,7 +174,7 @@ Three integration levels, one contract:
 
    ```ts
    interface AdAdapter {
-     request(ctx: AdSlotContext): Promise<AdHandle>
+     request(ctx: AdSlotContext): Promise<AdHandle | null> // null = no-fill
    }
    interface AdSlotContext {
      index: number // ad position ordinal
@@ -205,8 +208,8 @@ slide skip after a configurable timeout (default 2.5 s) + `ad:empty` event. Life
 BYO data. Story = `{ id, title, category, link, brand, poster, video, renditions[], preview }` —
 `preview` is a dedicated tiny muted MP4 (~100–300 KB) for the 2 s hover/viewport loop so the
 listing never downloads full videos. Static images are first-class story types. Input: feed URL,
-inline JSON, or a fetch callback. The `poster` field is mandatory for video stories (blurred
-detail background, `autoplay-blocked` fallback, Tier B markup).
+inline JSON, or a fetch callback. The `poster` field is optional but strongly recommended for
+video stories (blurred detail background, `autoplay-blocked` fallback, Tier B markup).
 
 ## State & privacy
 
@@ -216,15 +219,15 @@ view, which satisfies the business intent.
 
 ```ts
 interface StateStore {
-  get<T>(key: string): T | undefined | Promise<T | undefined>
-  set<T>(key: string, value: T): void | Promise<void>
+  get<T>(key: string): T | undefined
+  set<T>(key: string, value: T): void
   remove(key: string): void
 }
 ```
 
 Publishers opt into persistence (localStorage/cookie/server) under **their** CMP in ~3 lines;
-`createLocalStorageStore()` ships as an opt-in helper. Keys are namespaced and versioned
-(`flip-reel:v1:ad-seen:<id>`); gate scope is global per store (surviving one ad anywhere releases
+`createLocalStorageStateStore()` ships as an opt-in helper. Keys are namespaced and versioned
+(`flip-reel:v1:ad:gate-passed`); gate scope is global per store (surviving one ad anywhere releases
 the gate everywhere). GDPR/TCF, CMP choice and storage trade-offs stay entirely on the
 publisher's side, where they belong. No telemetry, ever.
 
@@ -240,7 +243,7 @@ We do not control the host page: tag managers load scripts twice, different team
 widget versions (`customElements.define()` on a taken tag **throws**), and browsers hard-limit
 concurrent video decoders (iOS Safari ≈ 3–4; beyond that: silent freezes, black frames). Both
 problems concern the whole page, hence one guarded namespace:
-`window.__FLIP_REEL__ ??= { versions, instances, scheduler }`.
+`globalThis.__FLIP_REEL__ ??= { version, instances, scheduler }`.
 
 ### Version-collision defense (layered)
 
@@ -305,8 +308,8 @@ embed. CWV safety is a documented contract:
 - **CLS = 0 by contract:** the documented embed snippet includes an `aspect-ratio` placeholder
   that reserves the widget's exact space before JS loads, for both tiers. Widget dimensions are
   part of the public API (changes are semver-relevant).
-- **Bundle budget:** v1 ships rail + player as a single entry, currently ~26 KB gzip, with a
-  hard ceiling of **30 KB gzip** (what every page pays).
+- **Bundle budget:** v1 ships rail + player as a single entry, currently ~29 KB gzip (ESM,
+  0.2.1), with a hard ceiling of **30 KB gzip** (what every page pays).
 - **Main-thread budget:** init < 50 ms of long tasks on a mid-range device; media work is
   IntersectionObserver-driven and batched in `requestAnimationFrame`.
 - **Network discipline:** posters outside the viewport are lazy with `fetchpriority="low"`;
@@ -342,11 +345,11 @@ from a live frame at a fraction of the cost: zero extra decoders, zero CORS expo
 canvas code. Works with any publisher CDN configuration.
 
 Player FSM includes explicit `autoplay-blocked` (iOS Low Power Mode — poster + play button
-fallback) and `ad-nofill` states. Error policy: feed failure ⇒ widget renders nothing
-(`flip-reel:error` event, zero layout trace); broken video ⇒ slide skipped. The player
-**hard-stops at both ends** of the feed — no infinite scroll / loop in v1 (the PoC's
-doubled-list teleport was evaluated and intentionally dropped; looping may return as a
-config option later).
+fallback) and `ad-nofill` states. Error policy: feed failure ⇒ the widget shows a localized
+"content unavailable" message and emits `flip-reel:error` with scope `feed`. The player wraps
+from the last story back to the first by default (`player.loop`, default `true`); set it to
+`false` to hard-stop at both ends. The PoC's doubled-list teleport was evaluated and dropped in
+favor of this playlist-level wrap.
 
 ## Security checklist (what publisher IT will look for)
 

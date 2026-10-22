@@ -48,6 +48,7 @@ player.open('s1')
 | `readMore(): boolean`                 | Emits cancelable `flip-reel:readmore`; `false` = link must not open |
 | `tick(deltaMs)`                       | Advances the ad countdown (call per animation frame)                |
 | `requestAdSkip()`                     | Skips the ad when skippable                                         |
+| `onAdImpression()` / `onAdNoFill()`   | Reports an ad render or no-fill; emits `ad:impression` / `ad:empty` |
 | `reportVideoProgress(cur, dur)`       | Feeds playback progress into the state                              |
 | `setAutoplayBlocked(b)`               | Marks blocked autoplay (shows the play overlay)                     |
 | `snapshot(): PlayerState`             | Current immutable state                                             |

@@ -40,7 +40,10 @@
   },
   "homepage": "https://github.com/Flipatic/flip-reel#readme",
   "bugs": "https://github.com/Flipatic/flip-reel/issues",
-  "author": "Autentika",
+  "author": "Flipatic (https://flipatic.com)",
+  "contributors": [
+    "Autentika (https://autentika.com)"
+  ],
   "keywords": [
     "reels",
     "stories",
@@ -48,7 +51,14 @@
     "lit",
     "embeddable",
     "ads",
-    "publisher"
+    "publisher",
+    "video",
+    "shorts",
+    "web-components",
+    "custom-elements",
+    "shadow-dom",
+    "news",
+    "video-player"
   ],
   "publishConfig": {
     "access": "public"

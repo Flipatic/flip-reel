@@ -8,10 +8,15 @@ export function App() {
     <>
       <header className="demo-header">
         <div className="demo-header__inner">
-          <div className="demo-brand">
-            <img src="/brand/autentika.svg" alt="Autentika" />
+          <a className="demo-brand" href="https://flipatic.com">
+            <img src="/brand/flipatic.svg" alt="Flipatic" />
+          </a>
+          <div className="demo-actions">
+            <span className="demo-badge">React</span>
+            <a className="demo-github" href="https://github.com/Flipatic/flip-reel">
+              GitHub
+            </a>
           </div>
-          <span className="demo-badge">React</span>
         </div>
       </header>
       <main className="demo-main">

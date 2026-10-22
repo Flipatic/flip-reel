@@ -30,7 +30,8 @@ document.querySelector('flip-reel')!.addEventListener('flip-reel:like', (event) 
 | `flip-reel:ad:skipped`    | `{ index: number }`                              | Viewer skipped the ad                            |
 | `flip-reel:ad:empty`      | `{ index: number }`                              | No-fill; the break was dismissed                 |
 
-`FlipReelErrorScope` is `'feed' | 'player' | 'ads'`.
+`FlipReelErrorScope` is `'feed' | 'player' | 'ads'`. In 0.2.1 only feed failures emit
+`flip-reel:error` (scope `feed`); `player` and `ads` are reserved for later releases.
 
 ## Canceling `flip-reel:readmore`
 

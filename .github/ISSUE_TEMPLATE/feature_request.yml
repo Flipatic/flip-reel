@@ -1,0 +1,42 @@
+name: Feature request
+description: Propose a change that was discussed or is small and self-contained.
+labels: ['enhancement', 'needs triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Larger ideas belong in [Discussions, Ideas](https://github.com/Flipatic/flip-reel/discussions/categories/ideas) first.
+        Changes to options, events, attributes or adapter contracts are public API and need agreement before code.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do on your site, and what stops you today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Option names, event payloads or adapter changes you have in mind.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Workarounds or alternatives you considered
+  - type: dropdown
+    id: budget
+    attributes:
+      label: Does this add runtime code to the widget bundle?
+      description: The widget has a 30 KB gzip budget.
+      options:
+        - No (docs, adapter package, tooling)
+        - Yes, small
+        - Yes, I am not sure how much
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I am willing to open a pull request for this.

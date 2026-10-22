@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or integration help
+    url: https://github.com/Flipatic/flip-reel/discussions/categories/q-a
+    about: Ask in Discussions. Issues are for confirmed bugs and agreed work.
+  - name: Feature idea
+    url: https://github.com/Flipatic/flip-reel/discussions/categories/ideas
+    about: Propose and discuss new features before opening an issue.
+  - name: Security vulnerability
+    url: https://github.com/Flipatic/flip-reel/security/advisories/new
+    about: Report privately. Do not open a public issue.

@@ -3,6 +3,14 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to [SemVer](https://semver.org/).
 
+## Unreleased
+
+### Changed
+
+- README rewritten; added Code of Conduct, support policy, issue forms, pull request
+  template, Dependabot and OpenSSF Scorecard configuration.
+- Package metadata: `author` and `keywords` updated.
+
 ## 0.2.1
 
 ### Changed

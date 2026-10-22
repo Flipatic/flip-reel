@@ -3,19 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>FlipReel — demo</title>
+    <title>FlipReel - demo</title>
     <meta
       name="description"
-      content="Live demo of FlipReel — an open-source, embeddable stories/reels widget for publishers."
+      content="FlipReel: bring short-form video to your own website. Free, open-source carousel of vertical videos for news sites."
     />
     <link rel="icon" type="image/svg+xml" href="/brand/flip-reel-logo.svg" />
     <meta name="theme-color" content="#0a0a0a" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="FlipReel — demo" />
+    <meta property="og:url" content="https://flip-reel-demo.vercel.app/" />
+    <meta property="og:title" content="FlipReel - demo" />
     <meta
       property="og:description"
-      content="An open-source, embeddable stories/reels widget for publishers."
+      content="FlipReel: bring short-form video to your own website. Free, open-source carousel of vertical videos for news sites."
     />
+    <meta property="og:image" content="https://flip-reel-demo.vercel.app/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="FlipReel - open-source carousel of vertical videos for news sites"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FlipReel - demo" />
+    <meta
+      name="twitter:description"
+      content="FlipReel: bring short-form video to your own website. Free, open-source carousel of vertical videos for news sites."
+    />
+    <meta name="twitter:image" content="https://flip-reel-demo.vercel.app/og.png" />
     <style>
       :root {
         font-family:
@@ -51,11 +66,33 @@
         height: 28px;
         width: auto;
       }
+      .site-actions {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
       .site-nav {
         display: flex;
         gap: 20px;
         font-size: 14px;
         color: #525252;
+      }
+      .site-github {
+        font-size: 14px;
+        font-weight: 600;
+        color: #171717;
+        text-decoration: none;
+        border: 1px solid #d4d4d8;
+        border-radius: 9999px;
+        padding: 6px 14px;
+      }
+      .site-github:hover {
+        background: #f4f4f5;
+      }
+      @media (max-width: 600px) {
+        .site-nav {
+          display: none;
+        }
       }
       main {
         max-width: 1280px;
@@ -76,10 +113,15 @@
   <body>
     <header class="site-header">
       <div class="site-header__inner">
-        <div class="brand"><img src="/brand/autentika.svg" alt="Autentika" /></div>
-        <nav class="site-nav">
-          <span>Poland</span><span>World</span><span>Sport</span><span>Culture</span>
-        </nav>
+        <a class="brand" href="https://flipatic.com"
+          ><img src="/brand/flipatic.svg" alt="Flipatic"
+        /></a>
+        <div class="site-actions">
+          <nav class="site-nav">
+            <span>Poland</span><span>World</span><span>Sport</span><span>Culture</span>
+          </nav>
+          <a class="site-github" href="https://github.com/Flipatic/flip-reel">GitHub</a>
+        </div>
       </div>
     </header>
     <main>

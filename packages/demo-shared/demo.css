@@ -33,6 +33,23 @@ body {
   height: 28px;
   width: auto;
 }
+.demo-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.demo-github {
+  font-size: 14px;
+  font-weight: 600;
+  color: #171717;
+  text-decoration: none;
+  border: 1px solid #d4d4d8;
+  border-radius: 9999px;
+  padding: 6px 14px;
+}
+.demo-github:hover {
+  background: #f4f4f5;
+}
 .demo-badge {
   font-size: 12px;
   font-weight: 600;

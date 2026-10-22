@@ -7,8 +7,13 @@ const options = createDemoOptions()
 <template>
   <header class="demo-header">
     <div class="demo-header__inner">
-      <div class="demo-brand"><img src="/brand/autentika.svg" alt="Autentika" /></div>
-      <span class="demo-badge">Vue</span>
+      <a class="demo-brand" href="https://flipatic.com"
+        ><img src="/brand/flipatic.svg" alt="Flipatic"
+      /></a>
+      <div class="demo-actions">
+        <span class="demo-badge">Vue</span>
+        <a class="demo-github" href="https://github.com/Flipatic/flip-reel">GitHub</a>
+      </div>
     </div>
   </header>
   <main class="demo-main">

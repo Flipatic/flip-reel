@@ -3,6 +3,10 @@
   "version": "0.2.1",
   "private": true,
   "description": "Open-source embeddable stories/reels widget for publishers",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Flipatic/flip-reel.git"
+  },
   "license": "Apache-2.0",
   "packageManager": "pnpm@10.34.5",
   "engines": {

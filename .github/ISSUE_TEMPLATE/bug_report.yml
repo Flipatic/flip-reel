@@ -1,0 +1,77 @@
+name: Bug report
+description: Something in the widget, core or an adapter does not work as documented.
+labels: ['bug', 'needs triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please check [existing issues](https://github.com/Flipatic/flip-reel/issues) first.
+        For questions use [Discussions](https://github.com/Flipatic/flip-reel/discussions).
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options:
+        - '@flipatic/flip-reel (widget)'
+        - '@flipatic/flip-reel-core'
+        - '@flipatic/flip-reel-ad-gpt'
+        - '@flipatic/flip-reel-react'
+        - Demo site or docs
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Run `npm ls @flipatic/flip-reel` or check the CDN URL.
+      placeholder: 0.2.0
+    validations:
+      required: true
+  - type: dropdown
+    id: integration
+    attributes:
+      label: Integration
+      options:
+        - CDN script tag (plain HTML / CMS)
+        - npm + mount()
+        - React
+        - Vue / Nuxt
+        - Svelte
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Browser and device
+      placeholder: iOS 26.1 Safari on iPhone 15, Low Power Mode on
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: A minimal page or CodePen/StackBlitz link helps most. Include the options you pass and a small feed.
+      placeholder: |
+        1. Embed `<flip-reel feed="...">` with the feed below
+        2. Open the player and swipe to story 3
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: feed
+    attributes:
+      label: Feed sample (optional)
+      render: json
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output and `flip-reel:error` events (optional)
+      render: shell
