@@ -1,5 +1,6 @@
 import { LitElement, css, html, nothing, type PropertyValues } from 'lit'
-import { customElement, property, state } from 'lit/decorators.js'
+import { property, state } from 'lit/decorators.js'
+import { flipReelElement } from './define'
 import type { FlipReelOptions } from '@flipatic/flip-reel-core'
 import { WidgetController } from '../context/widget-controller'
 import { readOptions } from '../context/attribute-options'
@@ -12,7 +13,7 @@ import './player-element'
  * Configure via the `options` property or via element attributes (`feed`,
  * `locale`, `brand`, ...). Emits `flip-reel:*` events on itself.
  */
-@customElement('flip-reel')
+@flipReelElement('flip-reel')
 export class FlipReelReels extends LitElement {
   /** Widget configuration; attribute-based options are read when omitted. */
   @property({ attribute: false }) options?: FlipReelOptions

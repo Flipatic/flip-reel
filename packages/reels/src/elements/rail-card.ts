@@ -1,5 +1,6 @@
 import { LitElement, css, html, nothing } from 'lit'
-import { customElement, property, query, state } from 'lit/decorators.js'
+import { property, query, state } from 'lit/decorators.js'
+import { flipReelElement } from './define'
 import {
   LeasePriority,
   canHover,
@@ -17,7 +18,7 @@ import { VideoLeaseController } from '../controllers/video-lease-controller'
  * `<flip-reel-rail-card>` — one story card in the rail, with hover video
  * preview. Emits an `open` event with the story id when activated.
  */
-@customElement('flip-reel-rail-card')
+@flipReelElement('flip-reel-rail-card')
 export class FlipReelRailCard extends LitElement {
   @property({ attribute: false }) story!: Story
   @property({ attribute: false }) scheduler!: MediaScheduler

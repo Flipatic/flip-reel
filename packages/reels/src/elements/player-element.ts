@@ -1,5 +1,6 @@
 import { LitElement, html, nothing, type PropertyValues } from 'lit'
-import { customElement, property, state } from 'lit/decorators.js'
+import { property, state } from 'lit/decorators.js'
+import { flipReelElement } from './define'
 import { LeasePriority, type FlipReelOptions, type PlayerState } from '@flipatic/flip-reel-core'
 import { WidgetController } from '../context/widget-controller'
 import { readOptions } from '../context/attribute-options'
@@ -28,7 +29,7 @@ const WHEEL_ADVANCE_MIN_PX = 12
  * parent `<flip-reel>`, but can bootstrap its own widget from attributes and
  * open at the story given by `start`.
  */
-@customElement('flip-reel-player')
+@flipReelElement('flip-reel-player')
 export class FlipReelPlayer extends LitElement {
   /** Widget instance shared with the parent element. */
   @property({ attribute: false }) widget?: WidgetController

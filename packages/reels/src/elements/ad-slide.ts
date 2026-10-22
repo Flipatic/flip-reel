@@ -1,5 +1,6 @@
 import { LitElement, css, html, nothing } from 'lit'
-import { customElement, property, query, state } from 'lit/decorators.js'
+import { property, query, state } from 'lit/decorators.js'
+import { flipReelElement } from './define'
 import type { AdAdapter, AdHandle } from '@flipatic/flip-reel-core'
 import type { Messages } from '../i18n/i18n'
 import { icon } from '../icons/icons'
@@ -9,7 +10,7 @@ import { icon } from '../icons/icons'
  * {@link AdAdapter} for a creative, shows the countdown/skip UI, and emits
  * `ad-impression`, `ad-nofill`, and `ad-skip` events.
  */
-@customElement('flip-reel-ad-slide')
+@flipReelElement('flip-reel-ad-slide')
 export class FlipReelAdSlide extends LitElement {
   @property({ attribute: false }) adapter?: AdAdapter
   @property({ attribute: false }) messages!: Messages

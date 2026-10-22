@@ -1,5 +1,6 @@
 import { LitElement, css, html, nothing } from 'lit'
-import { customElement, property, query, state } from 'lit/decorators.js'
+import { property, query, state } from 'lit/decorators.js'
+import { flipReelElement } from './define'
 import type { FlipReelOptions, MediaScheduler, Story } from '@flipatic/flip-reel-core'
 import { WidgetController } from '../context/widget-controller'
 import { readOptions } from '../context/attribute-options'
@@ -17,7 +18,7 @@ const FIXED_STEP_MS = 1000 / 60
  * widget from attributes when used without a parent `<flip-reel>`. Emits an
  * `open` event with the clicked story id.
  */
-@customElement('flip-reel-rail')
+@flipReelElement('flip-reel-rail')
 export class FlipReelRail extends LitElement {
   /** Stories to render as cards. */
   @property({ attribute: false }) stories: Story[] = []
