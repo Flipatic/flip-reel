@@ -13,6 +13,6 @@
     "@flipatic/flip-reel-demo-shared": "workspace:^",
     "@flipatic/flip-reel": "workspace:^",
     "nuxt": "^3.15.4",
-    "vue": "^3.5.13"
+    "vue": "^3.5.44"
   }
 }
