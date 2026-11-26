@@ -1,11 +1,16 @@
-import type { AdOptions, InteractionOptions, PlayerOptions, RailOptions } from '../types/config'
+import type {
+  AdOptions,
+  InteractionOptions,
+  PlayerOptions,
+  ResolvedRailOptions,
+} from '../types/config'
 
 /** Locale used when {@link FlipReelOptions.locale} is omitted. */
 export const DEFAULT_LOCALE = 'en'
 
-/** Defaults for {@link RailOptions}. */
-export const DEFAULT_RAIL: Required<RailOptions> = {
-  heading: null,
+/** Defaults for {@link RailOptions}. `heading: undefined` means the locale's heading. */
+export const DEFAULT_RAIL: ResolvedRailOptions = {
+  heading: undefined,
   maxVisible: 10,
   scrollBy: 4,
   loop: false,

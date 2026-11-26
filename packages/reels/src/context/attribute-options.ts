@@ -28,7 +28,7 @@ export function readOptions(el: OptionsHost): FlipReelOptions | null {
     brand: el.getAttribute('brand') ?? undefined,
     brandLogo: el.getAttribute('brand-logo') ?? undefined,
     rail: {
-      heading: el.getAttribute('heading'),
+      heading: el.getAttribute('heading') ?? undefined,
       maxVisible: numberAttr(el, 'max-visible'),
       scrollBy: numberAttr(el, 'scroll-by'),
       loop: boolAttr(el, 'rail-loop'),

@@ -5,6 +5,11 @@ All notable changes to this project are documented here. The format follows
 
 ## Unreleased
 
+### Fixed
+
+- `rail.heading: null` now hides the rail heading, as documented. Before, it fell back to the
+  locale's heading. An empty `heading` attribute hides it too.
+
 ### Changed
 
 - README rewritten; added Code of Conduct, support policy, issue forms, pull request

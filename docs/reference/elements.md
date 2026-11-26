@@ -32,7 +32,7 @@ Attributes are read once at connect time when no `options` property is set. Comp
 | `locale`           | `locale`              | string                       |
 | `brand`            | `brand`               | string                       |
 | `brand-logo`       | `brandLogo`           | URL string                   |
-| `heading`          | `rail.heading`        | string                       |
+| `heading`          | `rail.heading`        | string (`""` hides it)       |
 | `max-visible`      | `rail.maxVisible`     | number                       |
 | `scroll-by`        | `rail.scrollBy`       | number                       |
 | `rail-loop`        | `rail.loop`           | boolean (`"false"` disables) |

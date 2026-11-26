@@ -66,4 +66,17 @@ describe('resolveConfig', () => {
     expect(config.rail.maxVisible).toBe(DEFAULT_RAIL.maxVisible)
     expect(config.ads.every).toBe(DEFAULT_ADS.every)
   })
+
+  it('leaves the rail heading unset so the UI can use the locale heading', () => {
+    expect(resolveConfig({ feed }).rail.heading).toBeUndefined()
+    expect(resolveConfig({ feed, rail: { maxVisible: 4 } }).rail.heading).toBeUndefined()
+  })
+
+  it('keeps a null rail heading, which hides the heading', () => {
+    expect(resolveConfig({ feed, rail: { heading: null } }).rail.heading).toBeNull()
+  })
+
+  it('keeps a custom rail heading', () => {
+    expect(resolveConfig({ feed, rail: { heading: 'Watch now' } }).rail.heading).toBe('Watch now')
+  })
 })

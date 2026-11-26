@@ -36,13 +36,13 @@ interface FlipReelOptions {
 
 ## `rail`
 
-| Option           | Type             | Default               | Description                              |
-| ---------------- | ---------------- | --------------------- | ---------------------------------------- |
-| `heading`        | `string \| null` | locale's rail heading | Heading above the rail; `null` hides it  |
-| `maxVisible`     | `number`         | `10`                  | Maximum cards rendered (min 1)           |
-| `scrollBy`       | `number`         | `4`                   | Cards one arrow click scrolls by (min 1) |
-| `loop`           | `boolean`        | `false`               | Wrap the rail around at the ends         |
-| `hoverPreviewMs` | `number`         | `2000`                | Hover preview duration in ms (min 0)     |
+| Option           | Type             | Default               | Description                                     |
+| ---------------- | ---------------- | --------------------- | ----------------------------------------------- |
+| `heading`        | `string \| null` | locale's rail heading | Heading above the rail; `null` or `''` hides it |
+| `maxVisible`     | `number`         | `10`                  | Maximum cards rendered (min 1)                  |
+| `scrollBy`       | `number`         | `4`                   | Cards one arrow click scrolls by (min 1)        |
+| `loop`           | `boolean`        | `false`               | Wrap the rail around at the ends                |
+| `hoverPreviewMs` | `number`         | `2000`                | Hover preview duration in ms (min 0)            |
 
 ## `player`
 

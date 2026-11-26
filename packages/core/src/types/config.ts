@@ -148,13 +148,21 @@ export interface FlipReelOptions {
 }
 
 /** {@link FlipReelOptions} with every default applied and numbers clamped. */
+/**
+ * {@link RailOptions} after defaults are applied. `heading` stays `undefined` when it was
+ * not set, so the UI falls back to the locale's heading; `null` hides the heading.
+ */
+export type ResolvedRailOptions = Omit<Required<RailOptions>, 'heading'> & {
+  heading: string | null | undefined
+}
+
 export interface ResolvedConfig {
   feed: FeedSource
   locale: string
   brand: string
   brandLogo: string | null
   categories: Category[] | null
-  rail: Required<RailOptions>
+  rail: ResolvedRailOptions
   player: Required<PlayerOptions>
   ads: Required<AdOptions>
   interactions: Required<InteractionOptions>
