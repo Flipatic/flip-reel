@@ -3,6 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js'
 import type { FlipReelOptions } from '@flipatic/flip-reel-core'
 import { WidgetController } from '../context/widget-controller'
 import { readOptions } from '../context/attribute-options'
+import { railHeadingText } from '../context/rail-heading'
 import { tokens } from '../styles/tokens'
 import './rail-element'
 import './player-element'
@@ -67,7 +68,7 @@ export class FlipReelReels extends LitElement {
     if (widget.error) {
       return html`<div class="error" role="alert">${widget.messages.contentUnavailable}</div>`
     }
-    const heading = widget.config.rail.heading ?? widget.messages.railHeading
+    const heading = railHeadingText(widget.config.rail.heading, widget.messages)
     return html`
       <flip-reel-rail
         .stories="${widget.stories}"

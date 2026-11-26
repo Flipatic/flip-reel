@@ -3,6 +3,7 @@ import { customElement, property, query, state } from 'lit/decorators.js'
 import type { FlipReelOptions, MediaScheduler, Story } from '@flipatic/flip-reel-core'
 import { WidgetController } from '../context/widget-controller'
 import { readOptions } from '../context/attribute-options'
+import { railHeadingText } from '../context/rail-heading'
 import { icon } from '../icons/icons'
 import { tokens } from '../styles/tokens'
 import { railControl, visuallyHidden } from '../styles/shared'
@@ -67,10 +68,17 @@ export class FlipReelRail extends LitElement {
       .arrows {
         display: none;
         gap: 8px;
+        margin-left: auto;
       }
       @media (min-width: 1024px) {
         .arrows {
           display: flex;
+        }
+      }
+      /* Without a heading the row only holds the arrows, which are hidden below 1024px. */
+      @media (max-width: 1023px) {
+        .head.bare {
+          display: none;
         }
       }
       .track {
@@ -123,7 +131,7 @@ export class FlipReelRail extends LitElement {
     await this.own.load()
     this.stories = this.own.stories
     this.scheduler = this.own.scheduler
-    this.heading = this.own.config.rail.heading ?? this.own.messages.railHeading
+    this.heading = railHeadingText(this.own.config.rail.heading, this.own.messages)
     this.previewMs = this.own.config.rail.hoverPreviewMs
     this.maxVisible = this.own.config.rail.maxVisible
     this.scrollStep = this.own.config.rail.scrollBy
@@ -180,11 +188,11 @@ export class FlipReelRail extends LitElement {
   }
 
   render() {
-    const heading = this.heading ?? ''
+    const heading = this.heading
     const visible = this.stories.slice(0, this.maxVisible)
     return html`<section>
-      <div class="head">
-        <h2>${heading}</h2>
+      <div class="head ${heading ? '' : 'bare'}">
+        ${heading ? html`<h2>${heading}</h2>` : nothing}
         <div class="arrows">
           <button
             class="rail-control"
